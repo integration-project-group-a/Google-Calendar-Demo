@@ -59,52 +59,134 @@ namespace CalendarQuickstart
 			service = GService.service;
 		}
 
-		public static void getCalender(Calendar calenderToGet) {
+		public static Calendar getCalender(Calendar calenderToGet) {
 
 			Calendar calander = service.Calendars.Get(calenderToGet.Id).Execute();
+
+			return calander;
+		}
+		public static Calendar getCalenderById(String id)
+		{
+
+			Calendar calander = service.Calendars.Get(id).Execute();
+
+			return calander;
+		}
+		public static CalendarListEntry getCalenderByName(String name)
+		{
+			//this is not with type Calander, make sure to use var or CalendarListEntry when using
+
+			var calenders = getCalenders();
+
+			foreach (CalendarListEntry cal in calenders)
+			{
+
+				if (cal.Summary == name)
+				{
+					return cal;
+				}
+			}
+
+			return null;
 		}
 
 		public static IList<CalendarListEntry> getCalenders() {
 
 			var calenders = service.CalendarList.List().Execute().Items;
 
-		
-			
 			return calenders;
 
 		}
 			
-		public static CalendarsResource.InsertRequest newCalendar(string name)
+		public static CalendarsResource.InsertRequest newCalendar(string name, string location, string timeZone = "America/Los_Angeles")
 		{
+
 			Calendar newCalendar = new Calendar {
-				Summary = "demo test",
-				Location = "somewhere"
+				Summary = name,
+				Location = location,
+				TimeZone = timeZone
+
 
 			};
 
+			//probably not used...
 			return service.Calendars.Insert(newCalendar);
 
 		}
 
-		public static void updateCalendar(string id,  string newName) {
-
+		public static void updateCalendarById(string id,  string newName, string newLocation = "unknown", string newDescription = "none", string newTimeZone = "America/Los_Angeles") {
 
 			Calendar calendar = service.Calendars.Get(id).Execute();
+
 
 			// Make a change
 			calendar.Summary = "new Summary";
 			calendar.Location = newName;
+			calendar.Location = newLocation;
+			calendar.Description = newDescription;
 
 			// Update the altered calendar
 			service.Calendars.Update(calendar, calendar.Id).Execute();
 
 		}
+		//not tested!!!
+		public static void updateCalendarByName(string oldName, string newName, string newLocation = "unknown", string newDescription = "none", string newTimeZone = "America/Los_Angeles")
+		{
 
-		public static void deleleCalendar(string id) {
+			var calenders = getCalenders();
+			CalendarListEntry foundCalendar = null;
+
+			foreach (CalendarListEntry cal in calenders)
+			{
+
+				if (cal.Summary == oldName)
+				{
+					foundCalendar = cal;
+				}
+			}
+
+			// Make a change
+			Calendar calender = null;
+			calender.Summary = newName;
+			calender.Location = newLocation;
+			calender.Description = newDescription;
+			calender.TimeZone = newTimeZone;
+			calender.Id = foundCalendar.Id;
+
+			// Update the altered calendar
+			service.Calendars.Update(calender, foundCalendar.Id).Execute();
+
+		}
+
+		public static void deleteCalendar(Calendar calendar) {
+
+			service.Calendars.Delete(calendar.Id).Execute();
+
+		}
+		public static void deleteCalendarById(string id)
+		{
 
 			service.Calendars.Delete(id).Execute();
 
 		}
+		public static void deleteCalendarByName(string name)
+		{
+
+			var calenders = getCalenders();
+			CalendarListEntry foundCalander = null;
+
+			foreach (CalendarListEntry cal in calenders)
+			{
+
+				if (cal.Summary == name)
+				{
+					foundCalander = cal;
+				}
+			}
+			service.Calendars.Delete(foundCalander.Id).Execute();
+
+		}
+
 	}
 
 	public class Eventss
@@ -242,92 +324,7 @@ namespace CalendarQuickstart
 
 		 static void Main(string[] args) {
 
-			//setup for the service
-			GService testGService = new GService();
-			Eventss testevent = new Eventss();
-			Calendarss testcalender = new Calendarss();
-
-			//creat calendar
-			Calendarss.newCalendar("demo 1");
-
-
-			Console.Read();
-
-			// show all calendars
-			string id = null;
-			var test = Calendarss.getCalenders();
-			foreach (CalendarListEntry cal in test)
-			{
-
-				Console.WriteLine(cal.Summary);
-			}
-
-			Console.Read();
-
-
-			//update calendar
-			foreach (CalendarListEntry cal in test)
-			{
-
-				if (cal.Summary == "demo test1 ")
-				{
-					id = cal.Id;
-					Calendarss.updateCalendar(id, "demotest 2");
-				
-					
-				}
-			}
-
-
-			Console.Read();
-
-
-
-			//new event
-			Eventss.newEvent();
-
-
-			Console.Read();
-
-			//getting all events in calendar
-			Events events = Eventss.getevents();
-
-			Console.Read();
-
-			Event event2 = null;
-			//searching previous made event and deleting
-			foreach (var eventItem in events.Items)
-			{
-				string test2 = eventItem.Start.DateTime.ToString();
-				if (test2 == "03/08/2019 10:00:00")
-				{
-					Eventss.DeleteEvent(eventItem);
-					event2 = eventItem;
-
-				}
-			}
-
-
-			Console.Read();
-
-
-
-			Eventss.updateEvent(event2);
-
-
-			Console.Read();
-
-			Eventss.DeleteEvent(event2);
-
-
-			Console.Read();
-
-			//delete calendar
-			Calendarss.deleleCalendar(id);
-
-
-		
-			Console.Read();
+			
 		}
 			
 
