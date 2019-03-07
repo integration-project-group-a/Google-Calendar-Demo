@@ -129,6 +129,18 @@ namespace CalendarQuickstart
 			service.Calendars.Update(calendar, calendar.Id).Execute();
 
 		}
+		public static void updateCalendar(Calendar calendar, string newName, string newLocation = "unknown", string newDescription = "none", string newTimeZone = "America/Los_Angeles")
+		{
+			// Make a change
+			calendar.Summary = "new Summary";
+			calendar.Location = newName;
+			calendar.Location = newLocation;
+			calendar.Description = newDescription;
+
+			// Update the altered calendar
+			service.Calendars.Update(calendar, calendar.Id).Execute();
+
+		}
 		//not tested!!!
 		public static void updateCalendarByName(string oldName, string newName, string newLocation = "unknown", string newDescription = "none", string newTimeZone = "America/Los_Angeles")
 		{
@@ -199,8 +211,10 @@ namespace CalendarQuickstart
 			service = GService.service;
 		}
 
-		public static Events getevents()
+		//in construction
+		public static Events getEvents()
 		{
+
 
 
 			// Define parameters of request.
@@ -232,63 +246,142 @@ namespace CalendarQuickstart
 			return events;
 		}
 
-		public static void getEvent(Event eventToFind, string calendarId = "primary")
+		public static Events getAllnotDeletedEvents()
 		{
-			service.Events.Get(calendarId, eventToFind.Id).Execute();
+
+			EventsResource.ListRequest request = service.Events.List("primary");
+			request.TimeMin = DateTime.Now;
+			request.ShowDeleted = false;
+			request.SingleEvents = true;
+			request.OrderBy = EventsResource.ListRequest.OrderByEnum.StartTime;
+
+			// List events.
+			Events events = request.Execute();
+			return events;
+
+			/**
+			String pageToken = null;
+			do
+			{
+				Events events = service.Events.List('primary').setPageToken(pageToken).execute();
+				IList<Event> items = events.Items;
+			
+				pageToken = events.NextPageToken;
+			} while (pageToken != null);	*/
+
+		}
+		public static Events getAllDeletedEvents()
+		{
+			EventsResource.ListRequest request = service.Events.List("primary");
+			request.TimeMin = DateTime.Now;
+			request.ShowDeleted = true;
+			request.SingleEvents = true;
+			request.OrderBy = EventsResource.ListRequest.OrderByEnum.StartTime;
+
+			// List events.
+			Events events = request.Execute();
+
+			return events;
+		}
+			
+		public static Event getEventById(string eventId, string calendarId = "primary")
+		{
+			Event ev = service.Events.Get(calendarId, eventId).Execute();
+
+			return ev;
+
+		}
+		public static Dictionary<Event, Boolean> getEventByName(string name, string calendarId = "primary")
+		{
+			Events eventsNotDeleted = getAllnotDeletedEvents();
+				foreach(Event ev in eventsNotDeleted.Items)
+			{
+				if (ev.Summary == name)
+				{
+					Dictionary<Event, Boolean> returnvalue = null;
+					returnvalue.Add(ev, true);
+
+					return returnvalue;
+
+				}
+			}
+
+
+			Events eventsDeleted = getAllDeletedEvents();
+			foreach (Event ev in eventsDeleted.Items)
+			{
+				if (ev.Summary == name)
+				{
+					Dictionary<Event, Boolean> returnvalue = null;
+					returnvalue.Add(ev, false);
+
+					return returnvalue;
+
+				}
+			}
+
+			return null;
+
+
+		}
+		public static Event getEvent(Event eventToFind, string calendarId = "primary")
+		{
+			Event ev = service.Events.Get(calendarId, eventToFind.Id).Execute();
+
+			return ev;
 		}
 
-		public static void newEvent()
+		//usable but recurrence of event and attendees are hardcoded, later update
+		public static void newEvent(string summary, string location, string description, DateTime startDate, DateTime endDate, String TimeZone = "America/Los_Angeles", string calendarId = "primary")
 		{
 			Event myEvent = new Event
 			{
-				Summary = "demo event test",
-				Location = "Somewhere",
+				Summary = summary,
+				Location = location,
+				Description = description ,
 				Start = new EventDateTime()
 				{
-					DateTime = new DateTime(2019, 8, 3, 10, 0, 0),
-					TimeZone = "America/Los_Angeles"
+					DateTime = startDate,
+					TimeZone = TimeZone
 				},
 				End = new EventDateTime()
 				{
-					DateTime = new DateTime(2019, 8, 3, 10, 30, 0),
-					TimeZone = "America/Los_Angeles"
+					DateTime = endDate,
+					TimeZone = TimeZone
 				},
-				Recurrence = new String[] {
-	  "RRULE:FREQ=WEEKLY;BYDAY=MO"
-  },
-				Attendees = new List<EventAttendee>()
-	  {
-		new EventAttendee() { Email = "johndoe@gmail.com" }
-	  }
+
+					Recurrence = new String[] {
+					"RRULE:FREQ=WEEKLY;BYDAY=MO"
+				},
+					Attendees = new List<EventAttendee>()
+					 {
+						new EventAttendee() { Email = "johndoe@gmail.com" }
+					 }
 			};
 
-			Event recurringEvent = service.Events.Insert(myEvent, "primary").Execute();
+			Event recurringEvent = service.Events.Insert(myEvent, calendarId ).Execute();
 
 		}
 
+
+
+		//whole block usable but very basic...
 		public static void updateEvent(Event eventToUpdate) {
 
-		Event test = service.Events.Get("primary", eventToUpdate.Id).Execute();
+			Event ev = service.Events.Get("primary", eventToUpdate.Id).Execute();
 
 			//make a change
-			test.Summary = "demo new event name";
+			ev.Summary = "demo new event name";
 		
-
-		// Update the event
-		Event updatedEvent = service.Events.Update(test, "primary", eventToUpdate.Id).Execute();
-	
-
+			// Update the event
+			Event updatedEvent = service.Events.Update(ev, "primary", eventToUpdate.Id).Execute();
 		}
-
-
 		public static void DeleteEvent(Event eventToDelete, string calendarId = "primary")
 		{
 			Console.WriteLine("test123");
 			service.Events.Delete(calendarId, eventToDelete.Id).Execute();
 			Console.WriteLine("test");
 		}
-
-
 		public static void archiveEvent(Event eventToArchive) {
 			Event test = service.Events.Get("primary", eventToArchive.Id).Execute();
 
@@ -301,8 +394,6 @@ namespace CalendarQuickstart
 
 
 		}
-
-
 		public static void unarchiveEvent(Event eventToUnarchive) {
 
 			Event test = service.Events.Get("primary", eventToUnarchive.Id).Execute();
@@ -317,14 +408,85 @@ namespace CalendarQuickstart
 
 
 		}
+
 	}
+
 	class Program
 	{
 
 
 		 static void Main(string[] args) {
 
-			
+			//setup for the service
+			GService testGService = new GService();
+			Eventss testevent = new Eventss();
+			Calendarss testcalender = new Calendarss();
+
+			//creat calendar
+			Calendarss.newCalendar("demo 1", "somwhere");
+
+			Console.Read();
+
+			//show all calendars
+			var calendars = Calendarss.getCalenders();
+			foreach (CalendarListEntry cal in calendars)
+			{
+				Console.WriteLine(cal.Summary);
+			}
+
+			Console.Read();
+
+			//update calendar
+			foreach (CalendarListEntry cal in calendars)
+			{
+				if (cal.Summary == "demo 1")
+				{			
+					Calendarss.updateCalendarById(cal.Id, "demotest 2");
+				}
+			}
+
+			Console.Read();
+
+			DateTime startDate = new DateTime(2019, 5, 6, 6, 30, 00);
+			DateTime endDate = new DateTime(2019, 5, 6, 7, 30, 00);
+			//new event
+			Eventss.newEvent("demoTestEvent", "somewhere", "none", startDate, endDate);
+
+			Console.Read();
+
+			//getting all not deleted events in calendar + display
+			Events events = Eventss.getAllnotDeletedEvents();
+
+			Console.Read();
+
+			//searching and updating previous event
+			foreach (var ev in events.Items)
+			{
+				if (ev.Summary == "demoTestEvent")
+				{
+					Eventss.updateEvent(ev);
+				}
+
+			}
+
+			Console.Read();
+
+			//searching previous made event and deleting
+			foreach (var ev in events.Items)
+			{
+				if (ev.Summary == "demo new event name")
+				{
+					Eventss.DeleteEvent(ev);
+				}
+
+			}
+
+			Console.Read();
+
+			//delete calendar
+			Calendarss.deleteCalendarByName("demo 1");
+
+			Console.Read();
 		}
 			
 
