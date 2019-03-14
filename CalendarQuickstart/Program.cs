@@ -332,7 +332,7 @@ namespace CalendarQuickstart
 		}
 
 		//usable but recurrence of event and attendees are hardcoded, later update
-		public static void newEvent(string summary, string location, string description, DateTime startDate, DateTime endDate, String TimeZone = "America/Los_Angeles", string calendarId = "primary")
+		public static void newEvent(string summary, string location, string description, DateTime startDate, DateTime endDate, List<EventAttendee> eventAttendees, String TimeZone = "America/Los_Angeles", string calendarId = "primary")
 		{
 			Event myEvent = new Event
 			{
@@ -350,19 +350,41 @@ namespace CalendarQuickstart
 					TimeZone = TimeZone
 				},
 
-					Recurrence = new String[] {
-					"RRULE:FREQ=WEEKLY;BYDAY=MO"
-				},
-					Attendees = new List<EventAttendee>()
-					 {
-						new EventAttendee() { Email = "johndoe@gmail.com" }
-					 }
+				Attendees = eventAttendees
+
 			};
 
-			Event recurringEvent = service.Events.Insert(myEvent, calendarId ).Execute();
+			Event newEvent = service.Events.Insert(myEvent, calendarId).Execute();
+			addAttendees(eventAttendees, summary);
+		}
+		public static void addAttendees(List<EventAttendee> eventAttendees, string summary) {
+
+
+			Dictionary<Event, Boolean> events = getEventByName(summary);
+			Event eventToUpdate = null;
+			if (events.ContainsValue(true)) {
+
+				foreach (Event ev in events.Keys) {
+					foreach (EventAttendee att in ev.Attendees)
+					{
+						eventAttendees.Add(att);
+					}
+					ev.Attendees = eventAttendees;
+					eventToUpdate = ev;
+				}
+
+
+			}
+			if (events.ContainsValue(false)){
+				Console.Write("Event is marked as inactive, activate event to add attendees");
+			}
+			if (events == null) {
+				Console.Write("Event doesn't excist");
+			}
+
+			Event updatedEvent = service.Events.Update(eventToUpdate, "primary", eventToUpdate.Id).Execute();
 
 		}
-
 
 
 		//whole block usable but very basic...
@@ -421,7 +443,7 @@ namespace CalendarQuickstart
 			GService testGService = new GService();
 			Eventss testevent = new Eventss();
 			Calendarss testcalender = new Calendarss();
-
+			/**
 			//creat calendar
 			Calendarss.newCalendar("demo 1", "somwhere");
 
@@ -486,7 +508,12 @@ namespace CalendarQuickstart
 			//delete calendar
 			Calendarss.deleteCalendarByName("demo 1");
 
-			Console.Read();
+			Console.Read();*/
+
+
+
+
+
 		}
 			
 
