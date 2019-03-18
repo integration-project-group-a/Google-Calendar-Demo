@@ -10,136 +10,147 @@ namespace CalendarQuickstart.Logic
 {
     class Eventss
     {
+        //what is the retun value when you delete an event
         public static CalendarService service;
-
 
         public Eventss()
         {
             service = GService.service;
         }
 
-        //in construction
-        public static Events getEvents()
+        public static Events getAllEvents(string calendarId = "primary")
         {
-
-
-
             // Define parameters of request.
-            EventsResource.ListRequest request = service.Events.List("primary");
-            request.TimeMin = DateTime.Now;
-            request.ShowDeleted = false;
-            request.SingleEvents = true;
-            request.OrderBy = EventsResource.ListRequest.OrderByEnum.StartTime;
-
-            // List events.
-            Events events = request.Execute();
-            Console.WriteLine("Upcoming events:");
-            if (events.Items != null && events.Items.Count > 0)
-            {
-                foreach (var eventItem in events.Items)
-                {
-                    string when = eventItem.Start.DateTime.ToString();
-                    if (String.IsNullOrEmpty(when))
-                    {
-                        when = eventItem.Start.Date;
-                    }
-                    Console.WriteLine("{0} ({1})", eventItem.Summary, when);
-                }
-            }
-            else
-            {
-                Console.WriteLine("No upcoming events found.");
-            }
-            return events;
-        }
-
-        public static Events getAllnotDeletedEvents()
-        {
-
-            EventsResource.ListRequest request = service.Events.List("primary");
-            request.TimeMin = DateTime.Now;
-            request.ShowDeleted = false;
-            request.SingleEvents = true;
-            request.OrderBy = EventsResource.ListRequest.OrderByEnum.StartTime;
-
-            // List events.
-            Events events = request.Execute();
-            return events;
-
-            /**
-			String pageToken = null;
-			do
-			{
-				Events events = service.Events.List('primary').setPageToken(pageToken).execute();
-				IList<Event> items = events.Items;
-			
-				pageToken = events.NextPageToken;
-			} while (pageToken != null);	*/
-
-        }
-        public static Events getAllDeletedEvents()
-        {
-            EventsResource.ListRequest request = service.Events.List("primary");
+            EventsResource.ListRequest request = service.Events.List(calendarId);
             request.TimeMin = DateTime.Now;
             request.ShowDeleted = true;
             request.SingleEvents = true;
             request.OrderBy = EventsResource.ListRequest.OrderByEnum.StartTime;
 
-            // List events.
+            Events events = request.Execute();
+            return events;
+        }
+        public static Events getAllnotDeletedEvents(string calendarId = "primary")
+        {
+            // Define parameters of request.
+            EventsResource.ListRequest request = service.Events.List(calendarId);
+            request.TimeMin = DateTime.Now;
+            request.ShowDeleted = false;
+            request.SingleEvents = true;
+            request.OrderBy = EventsResource.ListRequest.OrderByEnum.StartTime;
+
+            Events events = request.Execute();
+            return events;       
+        }
+        public static Events getAllDeletedEvents(string calendarId = "primary")
+        {
+            // Define parameters of request.
+            EventsResource.ListRequest request = service.Events.List(calendarId);
+            request.TimeMin = DateTime.Now;
+            request.ShowDeleted = true;
+            request.SingleEvents = true;
+            request.OrderBy = EventsResource.ListRequest.OrderByEnum.StartTime;
+
             Events events = request.Execute();
 
+            foreach (Event ev in events.Items) {
+                //tests if the event has not been deleted
+                if (ev.Status != "cancelled") {
+                    events.Items.Remove(ev);
+                }
+
+            }
             return events;
         }
 
-        public static Event getEventById(string eventId, string calendarId = "primary")
+        //boolean? event excist: event is deleted / if return of methode is null event doesn't excist
+        public static Dictionary<Event, Boolean> getEventById(string eventId, string calendarId = "primary")
         {
-            Event ev = service.Events.Get(calendarId, eventId).Execute();
+            Events events = getAllEvents();
+            foreach (Event ev in events.Items)
+            {
+                if (ev.Status != "canceled")
+                {
+                    if (ev.Id == eventId)
+                    {
+                        Dictionary<Event, Boolean> returnvalue = null;
+                        returnvalue.Add(ev, true);
 
-            return ev;
+                        return returnvalue;
+                    }
+                }
+                else
+                {
+                    if (ev.Id == eventId)
+                    {
+                        Dictionary<Event, Boolean> returnvalue = null;
+                        returnvalue.Add(ev, false);
 
+                        return returnvalue;
+                    }
+                }
+            }
+            return null;
         }
         public static Dictionary<Event, Boolean> getEventByName(string name, string calendarId = "primary")
         {
-            Events eventsNotDeleted = getAllnotDeletedEvents();
-            foreach (Event ev in eventsNotDeleted.Items)
+            Events events = getAllEvents();
+            foreach (Event ev in events.Items)
             {
-                if (ev.Summary == name)
+                if (ev.Status != "canceled")
                 {
-                    Dictionary<Event, Boolean> returnvalue = null;
-                    returnvalue.Add(ev, true);
+                    if (ev.Summary == name)
+                    {
+                        Dictionary<Event, Boolean> returnvalue = null;
+                        returnvalue.Add(ev, true);
 
-                    return returnvalue;
-
+                        return returnvalue;
+                    }
                 }
+                else {
+                    if (ev.Summary == name)
+                    {
+                        Dictionary<Event, Boolean> returnvalue = null;
+                        returnvalue.Add(ev, false);
+
+                        return returnvalue;
+                    }
+                }         
             }
 
-
-            Events eventsDeleted = getAllDeletedEvents();
-            foreach (Event ev in eventsDeleted.Items)
+            return null;
+        }
+        public static Dictionary<Event, Boolean> getEvent(Event eventToFind, string calendarId = "primary")
+        {
+            Events events = getAllEvents();
+            foreach (Event ev in events.Items)
             {
-                if (ev.Summary == name)
+                if (ev.Status != "canceled")
                 {
-                    Dictionary<Event, Boolean> returnvalue = null;
-                    returnvalue.Add(ev, false);
+                    if (ev.Id == eventToFind.Id)
+                    {
+                        Dictionary<Event, Boolean> returnvalue = null;
+                        returnvalue.Add(ev, true);
 
-                    return returnvalue;
+                        return returnvalue;
+                    }
+                }
+                else
+                {
+                    if (ev.Id == eventToFind.Id)
+                    {
+                        Dictionary<Event, Boolean> returnvalue = null;
+                        returnvalue.Add(ev, false);
 
+                        return returnvalue;
+                    }
                 }
             }
 
             return null;
-
-
-        }
-        public static Event getEvent(Event eventToFind, string calendarId = "primary")
-        {
-            Event ev = service.Events.Get(calendarId, eventToFind.Id).Execute();
-
-            return ev;
         }
 
-        //usable but recurrence of event and attendees are hardcoded, later update
-        public static void newEvent(string summary, string location, string description, DateTime startDate, DateTime endDate, List<EventAttendee> eventAttendees, String TimeZone = "America/Los_Angeles", string calendarId = "primary")
+        public static Event newEvent(string summary, string location, string description, DateTime startDate, DateTime endDate, List<EventAttendee> eventAttendees, String TimeZone = "America/Los_Angeles", string calendarId = "primary")
         {
             Event myEvent = new Event
             {
@@ -158,21 +169,17 @@ namespace CalendarQuickstart.Logic
                 },
 
                 Attendees = eventAttendees
-
             };
 
-            Event newEvent = service.Events.Insert(myEvent, calendarId).Execute();
-            addAttendees(eventAttendees, summary);
+            return service.Events.Insert(myEvent, calendarId).Execute();
         }
-        public static void addAttendees(List<EventAttendee> eventAttendees, string summary)
+
+        public static Event addAttendeesByName(List<EventAttendee> eventAttendees, string name, string calendarId = "primary")
         {
-
-
-            Dictionary<Event, Boolean> events = getEventByName(summary);
+            Dictionary<Event, Boolean> events = getEventByName(name);
             Event eventToUpdate = null;
             if (events.ContainsValue(true))
             {
-
                 foreach (Event ev in events.Keys)
                 {
                     foreach (EventAttendee att in ev.Attendees)
@@ -182,8 +189,6 @@ namespace CalendarQuickstart.Logic
                     ev.Attendees = eventAttendees;
                     eventToUpdate = ev;
                 }
-
-
             }
             if (events.ContainsValue(false))
             {
@@ -194,56 +199,286 @@ namespace CalendarQuickstart.Logic
                 Console.Write("Event doesn't excist");
             }
 
-            Event updatedEvent = service.Events.Update(eventToUpdate, "primary", eventToUpdate.Id).Execute();
+            return service.Events.Update(eventToUpdate, calendarId, eventToUpdate.Id).Execute();
+        }
+        public static Event addAttendeesById(List<EventAttendee> eventAttendees, string eventId, string calendarId = "primary")
+        {
+            Dictionary<Event, Boolean> events = getEventById(eventId);
+            Event eventToUpdate = null;
+            if (events.ContainsValue(true))
+            {
+                foreach (Event ev in events.Keys)
+                {
+                    foreach (EventAttendee att in ev.Attendees)
+                    {
+                        eventAttendees.Add(att);
+                    }
+                    ev.Attendees = eventAttendees;
+                    eventToUpdate = ev;
+                }
+            }
+            if (events.ContainsValue(false))
+            {
+                Console.Write("Event is marked as inactive, activate event to add attendees");
+            }
+            if (events == null)
+            {
+                Console.Write("Event doesn't excist");
+            }
 
+            return service.Events.Update(eventToUpdate, calendarId, eventToUpdate.Id).Execute();   
+        }
+        public static Event addAttendees(List<EventAttendee> eventAttendees, Event eventToFind, string calendarId = "primary")
+        {
+            Dictionary<Event, Boolean> events = getEvent(eventToFind);
+            Event eventToUpdate = null;
+            if (events.ContainsValue(true))
+            {
+                foreach (Event ev in events.Keys)
+                {
+                    foreach (EventAttendee att in ev.Attendees)
+                    {
+                        eventAttendees.Add(att);
+                    }
+                    ev.Attendees = eventAttendees;
+                    eventToUpdate = ev;
+                }
+            }
+            if (events.ContainsValue(false))
+            {
+                Console.Write("Event is marked as inactive, activate event to add attendees");
+            }
+            if (events == null)
+            {
+                Console.Write("Event doesn't excist");
+            }
+
+            return service.Events.Update(eventToUpdate, calendarId, eventToUpdate.Id).Execute();
+        }
+
+        //these methodes will overrride predeclared values, example: eventAttendees will overide the old attendees not add them to the excisting ones
+        //do not change calendarId, you can't update it
+        //RESEARCH NEEDED to update calendar id
+        public static Event updateEventByName(string oldSummery, string newSummary, string location, string description, DateTime startDate, DateTime endDate, List<EventAttendee> eventAttendees, String TimeZone = "America/Los_Angeles", string calendarId = "primary")
+        {
+            Dictionary<Event, Boolean> events = getEventByName(oldSummery);
+
+            Event eventToUpdate = null;
+            if (events.ContainsValue(true))
+            {
+                foreach (Event ev in events.Keys)
+                {
+                    ev.Summary = newSummary;
+                    ev.Location = location;
+                    ev.Description = description;
+                    ev.Start = new EventDateTime()
+                    {
+                        DateTime = startDate,
+                        TimeZone = TimeZone
+                    };
+                    ev.End = new EventDateTime()
+                    {
+                        DateTime = endDate,
+                        TimeZone = TimeZone
+                    };
+                    ev.Attendees = eventAttendees;
+                    eventToUpdate = ev;
+                }
+            }
+            if (events.ContainsValue(false))
+            {
+                Console.Write("Event is marked as inactive, activate event before updating it");
+            }
+            if (events == null)
+            {
+                Console.Write("Event doesn't excist");
+            }
+
+            return service.Events.Update(eventToUpdate, "primary", eventToUpdate.Id).Execute();
+        }
+        public static Event updateEventById(string eventId, string summary, string location, string description, DateTime startDate, DateTime endDate, List<EventAttendee> eventAttendees, String TimeZone = "America/Los_Angeles", string calendarId = "primary")
+        {
+            Dictionary<Event, Boolean> events = getEventById(eventId);
+
+            Event eventToUpdate = null;
+            if (events.ContainsValue(true))
+            {
+                foreach (Event ev in events.Keys)
+                {
+                    ev.Summary = summary;
+                    ev.Location = location;
+                    ev.Description = description;
+                    ev.Start = new EventDateTime()
+                    {
+                        DateTime = startDate,
+                        TimeZone = TimeZone
+                    };
+                    ev.End = new EventDateTime()
+                    {
+                        DateTime = endDate,
+                        TimeZone = TimeZone
+                    };
+                    ev.Attendees = eventAttendees;
+                    eventToUpdate = ev;
+                }
+            }
+            if (events.ContainsValue(false))
+            {
+                Console.Write("Event is marked as inactive, activate event before updating it");
+            }
+            if (events == null)
+            {
+                Console.Write("Event doesn't excist");
+            }
+
+            return service.Events.Update(eventToUpdate, "primary", eventToUpdate.Id).Execute();
+        }
+        public static Event updateEvent(Event eventUpdate, string summary, string location, string description, DateTime startDate, DateTime endDate, List<EventAttendee> eventAttendees, String TimeZone = "America/Los_Angeles", string calendarId = "primary")
+        {
+            Dictionary<Event, Boolean> events = getEvent(eventUpdate);
+
+            Event eventToUpdate = null;
+            if (events.ContainsValue(true))
+            {
+                foreach (Event ev in events.Keys)
+                {
+                    ev.Summary = summary;
+                    ev.Location = location;
+                    ev.Description = description;
+                    ev.Start = new EventDateTime()
+                    {
+                        DateTime = startDate,
+                        TimeZone = TimeZone
+                    };
+                    ev.End = new EventDateTime()
+                    {
+                        DateTime = endDate,
+                        TimeZone = TimeZone
+                    };
+                    ev.Attendees = eventAttendees;
+                    eventToUpdate = ev;
+                }
+            }
+            if (events.ContainsValue(false))
+            {
+                Console.Write("Event is marked as inactive, activate event before updating it");
+            }
+            if (events == null)
+            {
+                Console.Write("Event doesn't excist");
+            }
+
+            return service.Events.Update(eventToUpdate, "primary", eventToUpdate.Id).Execute();
+        }
+
+        //you can recover "deleted" events
+        //RESARCH NEEDED to know how long they will be able to be recovered
+        //test string!!
+        public static string DeleteEvent(Event eventToDelete, string calendarId = "primary")
+        {
+            return service.Events.Delete(calendarId, eventToDelete.Id).Execute();
+        }
+        //return values are incorrect
+        public static string DeleteEventByName(string name, string calendarId = "primary")
+        {
+            var ev = getEventByName(name);
+            if (ev.ContainsValue(true)) {
+                foreach(Event eve in ev.Keys)
+                return service.Events.Delete(calendarId, eve.Id).Execute();
+            }
+            if (ev.ContainsValue(false))
+            {
+                //wrong return value
+                return "already deleted";
+            }
+            //doesn't excist
+            else return null;
+            
+        }
+        public static string DeleteEventById(string id, string calendarId = "primary")
+        {
+            return service.Events.Delete(calendarId, id).Execute();
         }
 
 
-        //whole block usable but very basic...
-        public static void updateEvent(Event eventToUpdate)
+        public static Event UnDeleteEvent(Event eventToArchive, string calendarId = "primary")
         {
+            Dictionary<Event, Boolean> events = getEvent(eventToArchive);
 
-            Event ev = service.Events.Get("primary", eventToUpdate.Id).Execute();
+            Event eventToUpdate = null;
+            if (events.ContainsValue(true))
+            {
+                foreach (Event ev in events.Keys)
+                {
+                    ev.Status = "confirmed";
+                    eventToUpdate = ev;
+                }
+            }
+            if (events.ContainsValue(false))
+            {
+                Console.Write("Event is marked as inactive, activate event before updating it");
+                return null;
+            }
+            if (events == null)
+            {
+                Console.Write("Event doesn't excist");
+                return null;
+            }
 
-            //make a change
-            ev.Summary = "demo new event name";
-
-            // Update the event
-            Event updatedEvent = service.Events.Update(ev, "primary", eventToUpdate.Id).Execute();
+            return service.Events.Update(eventToUpdate, calendarId, eventToUpdate.Id).Execute();
         }
-        public static void DeleteEvent(Event eventToDelete, string calendarId = "primary")
+        public static Event UnDeleteEventByName(string name, string calendarId = "primary")
         {
-            Console.WriteLine("test123");
-            service.Events.Delete(calendarId, eventToDelete.Id).Execute();
-            Console.WriteLine("test");
+            Dictionary<Event, Boolean> events = getEventByName(name);
+
+            Event eventToUpdate = null;
+            if (events.ContainsValue(true))
+            {
+                foreach (Event ev in events.Keys)
+                {
+                    ev.Status = "confirmed";
+                    eventToUpdate = ev;
+                }
+            }
+            if (events.ContainsValue(false))
+            {
+                Console.Write("Event is marked as inactive, activate event before updating it");
+                return null;
+            }
+            if (events == null)
+            {
+                Console.Write("Event doesn't excist");
+                return null;
+            }
+
+            return service.Events.Update(eventToUpdate, calendarId, eventToUpdate.Id).Execute();
         }
-        public static void archiveEvent(Event eventToArchive)
+        public static Event UnDeleteEventById(string eventId, string calendarId = "primary")
         {
-            Event test = service.Events.Get("primary", eventToArchive.Id).Execute();
+            Dictionary<Event, Boolean> events = getEventById(eventId);
 
-            //make a change
-            test.Locked = true;
+            Event eventToUpdate = null;
+            if (events.ContainsValue(true))
+            {
+                foreach (Event ev in events.Keys)
 
+                {
+                    ev.Status = "confirmed";
+                    eventToUpdate = ev;
+                }
+            }
+            if (events.ContainsValue(false))
+            {
+                Console.Write("Event is marked as inactive, activate event before updating it");
+                return null;
+            }
+            if (events == null)
+            {
+                Console.Write("Event doesn't excist");
+                return null;
+            }
 
-            // Update the event
-            Event updatedEvent = service.Events.Update(test, "primary", eventToArchive.Id).Execute();
-
-
-        }
-        public static void unarchiveEvent(Event eventToUnarchive)
-        {
-
-            Event test = service.Events.Get("primary", eventToUnarchive.Id).Execute();
-
-            //make a change
-            test.Locked = false;
-
-
-            // Update the event
-            Event updatedEvent = service.Events.Update(test, "primary", eventToUnarchive.Id).Execute();
-
-
-
+            return service.Events.Update(eventToUpdate, calendarId, eventToUpdate.Id).Execute();
         }
     }
 }
