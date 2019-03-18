@@ -10,6 +10,8 @@ namespace CalendarQuickstart.Logic
 {
     class Calendarss
     {
+        // can a calendar be undeleted? what are the reutn values when you delete/clear a calendar?
+
         static CalendarService service;
 
         public Calendarss()

@@ -10,6 +10,7 @@ namespace CalendarQuickstart.Logic
 {
     class Eventss
     {
+        //what is the retun value when you delete an event
         public static CalendarService service;
 
         public Eventss()
@@ -149,7 +150,7 @@ namespace CalendarQuickstart.Logic
             return null;
         }
 
-        public static void newEvent(string summary, string location, string description, DateTime startDate, DateTime endDate, List<EventAttendee> eventAttendees, String TimeZone = "America/Los_Angeles", string calendarId = "primary")
+        public static Event newEvent(string summary, string location, string description, DateTime startDate, DateTime endDate, List<EventAttendee> eventAttendees, String TimeZone = "America/Los_Angeles", string calendarId = "primary")
         {
             Event myEvent = new Event
             {
@@ -170,10 +171,10 @@ namespace CalendarQuickstart.Logic
                 Attendees = eventAttendees
             };
 
-            Event newEvent = service.Events.Insert(myEvent, calendarId).Execute();
+            return service.Events.Insert(myEvent, calendarId).Execute();
         }
 
-        public static void addAttendeesByName(List<EventAttendee> eventAttendees, string name, string calendarId = "primary")
+        public static Event addAttendeesByName(List<EventAttendee> eventAttendees, string name, string calendarId = "primary")
         {
             Dictionary<Event, Boolean> events = getEventByName(name);
             Event eventToUpdate = null;
@@ -198,9 +199,9 @@ namespace CalendarQuickstart.Logic
                 Console.Write("Event doesn't excist");
             }
 
-            Event updatedEvent = service.Events.Update(eventToUpdate, calendarId, eventToUpdate.Id).Execute();
+            return service.Events.Update(eventToUpdate, calendarId, eventToUpdate.Id).Execute();
         }
-        public static void addAttendeesById(List<EventAttendee> eventAttendees, string eventId, string calendarId = "primary")
+        public static Event addAttendeesById(List<EventAttendee> eventAttendees, string eventId, string calendarId = "primary")
         {
             Dictionary<Event, Boolean> events = getEventById(eventId);
             Event eventToUpdate = null;
@@ -225,9 +226,9 @@ namespace CalendarQuickstart.Logic
                 Console.Write("Event doesn't excist");
             }
 
-            Event updatedEvent = service.Events.Update(eventToUpdate, calendarId, eventToUpdate.Id).Execute();   
+            return service.Events.Update(eventToUpdate, calendarId, eventToUpdate.Id).Execute();   
         }
-        public static void addAttendees(List<EventAttendee> eventAttendees, Event eventToFind, string calendarId = "primary")
+        public static Event addAttendees(List<EventAttendee> eventAttendees, Event eventToFind, string calendarId = "primary")
         {
             Dictionary<Event, Boolean> events = getEvent(eventToFind);
             Event eventToUpdate = null;
@@ -252,13 +253,13 @@ namespace CalendarQuickstart.Logic
                 Console.Write("Event doesn't excist");
             }
 
-            Event updatedEvent = service.Events.Update(eventToUpdate, calendarId, eventToUpdate.Id).Execute();
+            return service.Events.Update(eventToUpdate, calendarId, eventToUpdate.Id).Execute();
         }
 
         //these methodes will overrride predeclared values, example: eventAttendees will overide the old attendees not add them to the excisting ones
         //do not change calendarId, you can't update it
         //RESEARCH NEEDED to update calendar id
-        public static void updateEventByName(string oldSummery, string newSummary, string location, string description, DateTime startDate, DateTime endDate, List<EventAttendee> eventAttendees, String TimeZone = "America/Los_Angeles", string calendarId = "primary")
+        public static Event updateEventByName(string oldSummery, string newSummary, string location, string description, DateTime startDate, DateTime endDate, List<EventAttendee> eventAttendees, String TimeZone = "America/Los_Angeles", string calendarId = "primary")
         {
             Dictionary<Event, Boolean> events = getEventByName(oldSummery);
 
@@ -293,9 +294,9 @@ namespace CalendarQuickstart.Logic
                 Console.Write("Event doesn't excist");
             }
 
-            Event updatedEvent = service.Events.Update(eventToUpdate, "primary", eventToUpdate.Id).Execute();
+            return service.Events.Update(eventToUpdate, "primary", eventToUpdate.Id).Execute();
         }
-        public static void updateEventById(string eventId, string summary, string location, string description, DateTime startDate, DateTime endDate, List<EventAttendee> eventAttendees, String TimeZone = "America/Los_Angeles", string calendarId = "primary")
+        public static Event updateEventById(string eventId, string summary, string location, string description, DateTime startDate, DateTime endDate, List<EventAttendee> eventAttendees, String TimeZone = "America/Los_Angeles", string calendarId = "primary")
         {
             Dictionary<Event, Boolean> events = getEventById(eventId);
 
@@ -330,9 +331,9 @@ namespace CalendarQuickstart.Logic
                 Console.Write("Event doesn't excist");
             }
 
-            Event updatedEvent = service.Events.Update(eventToUpdate, "primary", eventToUpdate.Id).Execute();
+            return service.Events.Update(eventToUpdate, "primary", eventToUpdate.Id).Execute();
         }
-        public static void updateEvent(Event eventUpdate, string summary, string location, string description, DateTime startDate, DateTime endDate, List<EventAttendee> eventAttendees, String TimeZone = "America/Los_Angeles", string calendarId = "primary")
+        public static Event updateEvent(Event eventUpdate, string summary, string location, string description, DateTime startDate, DateTime endDate, List<EventAttendee> eventAttendees, String TimeZone = "America/Los_Angeles", string calendarId = "primary")
         {
             Dictionary<Event, Boolean> events = getEvent(eventUpdate);
 
@@ -367,16 +368,40 @@ namespace CalendarQuickstart.Logic
                 Console.Write("Event doesn't excist");
             }
 
-            Event updatedEvent = service.Events.Update(eventToUpdate, "primary", eventToUpdate.Id).Execute();
+            return service.Events.Update(eventToUpdate, "primary", eventToUpdate.Id).Execute();
         }
 
         //you can recover "deleted" events
         //RESARCH NEEDED to know how long they will be able to be recovered
-        public static void DeleteEvent(Event eventToDelete, string calendarId = "primary")
+        //test string!!
+        public static string DeleteEvent(Event eventToDelete, string calendarId = "primary")
         {
-            service.Events.Delete(calendarId, eventToDelete.Id).Execute();
+            return service.Events.Delete(calendarId, eventToDelete.Id).Execute();
         }
-        public static void UnDeleteEvent(Event eventToArchive, string calendarId = "primary")
+        //return values are incorrect
+        public static string DeleteEventByName(string name, string calendarId = "primary")
+        {
+            var ev = getEventByName(name);
+            if (ev.ContainsValue(true)) {
+                foreach(Event eve in ev.Keys)
+                return service.Events.Delete(calendarId, eve.Id).Execute();
+            }
+            if (ev.ContainsValue(false))
+            {
+                //wrong return value
+                return "already deleted";
+            }
+            //doesn't excist
+            else return null;
+            
+        }
+        public static string DeleteEventById(string id, string calendarId = "primary")
+        {
+            return service.Events.Delete(calendarId, id).Execute();
+        }
+
+
+        public static Event UnDeleteEvent(Event eventToArchive, string calendarId = "primary")
         {
             Dictionary<Event, Boolean> events = getEvent(eventToArchive);
 
@@ -392,15 +417,17 @@ namespace CalendarQuickstart.Logic
             if (events.ContainsValue(false))
             {
                 Console.Write("Event is marked as inactive, activate event before updating it");
+                return null;
             }
             if (events == null)
             {
                 Console.Write("Event doesn't excist");
+                return null;
             }
 
-            Event updatedEvent = service.Events.Update(eventToUpdate, calendarId, eventToUpdate.Id).Execute();
+            return service.Events.Update(eventToUpdate, calendarId, eventToUpdate.Id).Execute();
         }
-        public static void UnDeleteEventByName(string name, string calendarId = "primary")
+        public static Event UnDeleteEventByName(string name, string calendarId = "primary")
         {
             Dictionary<Event, Boolean> events = getEventByName(name);
 
@@ -416,15 +443,17 @@ namespace CalendarQuickstart.Logic
             if (events.ContainsValue(false))
             {
                 Console.Write("Event is marked as inactive, activate event before updating it");
+                return null;
             }
             if (events == null)
             {
                 Console.Write("Event doesn't excist");
+                return null;
             }
 
-            Event updatedEvent = service.Events.Update(eventToUpdate, calendarId, eventToUpdate.Id).Execute();
+            return service.Events.Update(eventToUpdate, calendarId, eventToUpdate.Id).Execute();
         }
-        public static void UnDeleteEventById(string eventId, string calendarId = "primary")
+        public static Event UnDeleteEventById(string eventId, string calendarId = "primary")
         {
             Dictionary<Event, Boolean> events = getEventById(eventId);
 
@@ -441,15 +470,15 @@ namespace CalendarQuickstart.Logic
             if (events.ContainsValue(false))
             {
                 Console.Write("Event is marked as inactive, activate event before updating it");
-                return;
+                return null;
             }
             if (events == null)
             {
                 Console.Write("Event doesn't excist");
-                return;
+                return null;
             }
 
-            Event updatedEvent = service.Events.Update(eventToUpdate, calendarId, eventToUpdate.Id).Execute();
+            return service.Events.Update(eventToUpdate, calendarId, eventToUpdate.Id).Execute();
         }
     }
 }
