@@ -10,12 +10,57 @@ namespace CalendarQuickstart.Logic
 {
     class Eventss
     {
+        //don't use primary calendar in deplotment
+
         //what is the retun value when you delete an event
         public static CalendarService service;
 
         public Eventss()
         {
             service = GService.service;
+        }
+
+        public static Boolean testDate(DateTime? start, DateTime? end) {
+
+            if (start < end)
+            {
+                return true;
+            }
+            //rabbitmq error
+            else return false; 
+        }
+        public static Boolean testOverlapLocation(DateTime? start, DateTime? end, string location)
+        {
+            var events = getAllnotDeletedEvents();
+            foreach (Event ev in events.Items) {
+
+                if (ev.Location == location) {
+
+                    if (ev.End.DateTime >= start && ev.Start.DateTime <= end || ev.End.DateTime >= end && ev.Start.DateTime <= start) {
+                        return false;
+
+                    }
+                }
+                    
+                    }
+            return true;
+        }
+        public static Boolean testOverlapAttendees(DateTime? start, DateTime? end, IList<EventAttendee> eventAttendees)
+        {
+            var events = getAllnotDeletedEvents();
+            foreach (var ev in events.Items)
+            {
+                foreach(var attendee in eventAttendees)
+                {
+                    if (ev.Attendees.Contains(attendee) && (ev.End.DateTime >= start && ev.Start.DateTime <= end || ev.End.DateTime >= end && ev.Start.DateTime <= start)) {
+
+                        return false;
+                    }
+
+                }
+
+            }
+            return true;
         }
 
         public static Events getAllEvents(string calendarId = "primary")
@@ -152,6 +197,10 @@ namespace CalendarQuickstart.Logic
 
         public static Event newEvent(string summary, string location, string description, DateTime startDate, DateTime endDate, List<EventAttendee> eventAttendees, String TimeZone = "America/Los_Angeles", string calendarId = "primary")
         {
+            if(!testDate(startDate, endDate) && !testOverlapLocation(startDate, endDate,location) && !testOverlapAttendees(startDate, endDate,eventAttendees)){
+                return null;
+            }
+            
             Event myEvent = new Event
             {
                 Summary = summary,
@@ -168,8 +217,19 @@ namespace CalendarQuickstart.Logic
                     TimeZone = TimeZone
                 },
 
-                Attendees = eventAttendees
+                Attendees = eventAttendees,
+
+                Reminders = new Google.Apis.Calendar.v3.Data.Event.RemindersData()
+                {
+                    UseDefault = false,
+                    Overrides = new Google.Apis.Calendar.v3.Data.EventReminder[]
+                                {
+                                                        new Google.Apis.Calendar.v3.Data.EventReminder() { Method = "email", Minutes = 30 },
+                                                        new Google.Apis.Calendar.v3.Data.EventReminder() { Method = "popup", Minutes = 10 }
+                                }
+                }
             };
+            
 
             return service.Events.Insert(myEvent, calendarId).Execute();
         }
@@ -261,6 +321,10 @@ namespace CalendarQuickstart.Logic
         //RESEARCH NEEDED to update calendar id
         public static Event updateEventByName(string oldSummery, string newSummary, string location, string description, DateTime startDate, DateTime endDate, List<EventAttendee> eventAttendees, String TimeZone = "America/Los_Angeles", string calendarId = "primary")
         {
+            if (!testDate(startDate, endDate) && !testOverlapLocation(startDate, endDate, location) && !testOverlapAttendees(startDate, endDate, eventAttendees))
+            {
+                return null;
+            }
             Dictionary<Event, Boolean> events = getEventByName(oldSummery);
 
             Event eventToUpdate = null;
@@ -298,6 +362,10 @@ namespace CalendarQuickstart.Logic
         }
         public static Event updateEventById(string eventId, string summary, string location, string description, DateTime startDate, DateTime endDate, List<EventAttendee> eventAttendees, String TimeZone = "America/Los_Angeles", string calendarId = "primary")
         {
+            if (!testDate(startDate, endDate) && !testOverlapLocation(startDate, endDate, location) && !testOverlapAttendees(startDate, endDate, eventAttendees))
+            {
+                return null;
+            }
             Dictionary<Event, Boolean> events = getEventById(eventId);
 
             Event eventToUpdate = null;
@@ -335,6 +403,10 @@ namespace CalendarQuickstart.Logic
         }
         public static Event updateEvent(Event eventUpdate, string summary, string location, string description, DateTime startDate, DateTime endDate, List<EventAttendee> eventAttendees, String TimeZone = "America/Los_Angeles", string calendarId = "primary")
         {
+            if (!testDate(startDate, endDate) && !testOverlapLocation(startDate, endDate, location) && !testOverlapAttendees(startDate, endDate, eventAttendees))
+            {
+                return null;
+            }
             Dictionary<Event, Boolean> events = getEvent(eventUpdate);
 
             Event eventToUpdate = null;
@@ -400,9 +472,9 @@ namespace CalendarQuickstart.Logic
             return service.Events.Delete(calendarId, id).Execute();
         }
 
-
         public static Event UnDeleteEvent(Event eventToArchive, string calendarId = "primary")
         {
+           
             Dictionary<Event, Boolean> events = getEvent(eventToArchive);
 
             Event eventToUpdate = null;
@@ -410,14 +482,22 @@ namespace CalendarQuickstart.Logic
             {
                 foreach (Event ev in events.Keys)
                 {
+                 
                     ev.Status = "confirmed";
                     eventToUpdate = ev;
                 }
             }
             if (events.ContainsValue(false))
             {
-                Console.Write("Event is marked as inactive, activate event before updating it");
-                return null;
+                foreach (Event ev in events.Keys)
+                {
+                    if (!testDate(ev.Start.DateTime, ev.End.DateTime) && !testOverlapLocation(ev.Start.DateTime, ev.End.DateTime, ev.Location) && !testOverlapAttendees(ev.Start.DateTime, ev.End.DateTime, ev.Attendees))
+                    {
+                        return null;
+                    }
+                    ev.Status = "confirmed";
+                    eventToUpdate = ev;
+                }
             }
             if (events == null)
             {
@@ -429,21 +509,29 @@ namespace CalendarQuickstart.Logic
         }
         public static Event UnDeleteEventByName(string name, string calendarId = "primary")
         {
+            
             Dictionary<Event, Boolean> events = getEventByName(name);
 
             Event eventToUpdate = null;
             if (events.ContainsValue(true))
             {
                 foreach (Event ev in events.Keys)
-                {
+                {                 
                     ev.Status = "confirmed";
                     eventToUpdate = ev;
                 }
             }
             if (events.ContainsValue(false))
             {
-                Console.Write("Event is marked as inactive, activate event before updating it");
-                return null;
+                foreach (Event ev in events.Keys)
+                {
+                    if (!testDate(ev.Start.DateTime, ev.End.DateTime) && !testOverlapLocation(ev.Start.DateTime, ev.End.DateTime, ev.Location) && !testOverlapAttendees(ev.Start.DateTime, ev.End.DateTime, ev.Attendees))
+                    {
+                        return null;
+                    }
+                    ev.Status = "confirmed";
+                    eventToUpdate = ev;
+                }
             }
             if (events == null)
             {
@@ -455,6 +543,7 @@ namespace CalendarQuickstart.Logic
         }
         public static Event UnDeleteEventById(string eventId, string calendarId = "primary")
         {
+           
             Dictionary<Event, Boolean> events = getEventById(eventId);
 
             Event eventToUpdate = null;
@@ -462,15 +551,22 @@ namespace CalendarQuickstart.Logic
             {
                 foreach (Event ev in events.Keys)
 
-                {
+                {                 
                     ev.Status = "confirmed";
                     eventToUpdate = ev;
                 }
             }
             if (events.ContainsValue(false))
             {
-                Console.Write("Event is marked as inactive, activate event before updating it");
-                return null;
+                foreach (Event ev in events.Keys)
+                {
+                    if (!testDate(ev.Start.DateTime, ev.End.DateTime) && !testOverlapLocation(ev.Start.DateTime, ev.End.DateTime, ev.Location) && !testOverlapAttendees(ev.Start.DateTime, ev.End.DateTime, ev.Attendees))
+                    {
+                        return null;
+                    }
+                    ev.Status = "confirmed";
+                    eventToUpdate = ev;
+                }
             }
             if (events == null)
             {

@@ -10,7 +10,7 @@ namespace CalendarQuickstart.Logic
 {
     class Calendarss
     {
-        // can a calendar be undeleted? what are the reutn values when you delete/clear a calendar?
+        // can a calendar be undeleted? 
 
         static CalendarService service;
 
@@ -59,13 +59,13 @@ namespace CalendarQuickstart.Logic
         //you can only clear the primary calendar
         //BE AWARE this is a very desctructive method, all events will be deleted
         //test string
+        //returns id if failed
         public static string clearCalendar() {
 
             return service.Calendars.Clear("primary").Execute();
         }
 
         //creates secondary calendar
-        //probably not used...
         public static Calendar newCalendar(string name, string location, string despcription, string secundaryCalendarId, string timeZone = "America/Los_Angeles")
         {
             Calendar newCalendar = new Calendar
@@ -80,7 +80,7 @@ namespace CalendarQuickstart.Logic
             return service.Calendars.Insert(newCalendar).Execute();
         }
 
-        //RECHEARCH NEEDED: change id possible?
+        //Cannot change ID!
         public static Calendar updateCalendarById(string newName, string newLocation = "unknown", string newDescription = "none", string newTimeZone = "America/Los_Angeles", string id = "primary")
         {
             Calendar calendar = service.Calendars.Get(id).Execute();
@@ -134,7 +134,7 @@ namespace CalendarQuickstart.Logic
         }
 
         //whole block can only delete a secondary calendar
-        //test string return!!
+        //returns id if failed
         public static string deleteCalendar(Calendar calendar)
         {
             return service.Calendars.Delete(calendar.Id).Execute();
