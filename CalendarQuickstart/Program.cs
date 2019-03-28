@@ -25,7 +25,7 @@ namespace CalendarQuickstart
 			Eventss testevent = new Eventss();
 			Calendarss testcalender = new Calendarss();
 			/**
-			//creat calendar
+			//create calendar
 			Calendarss.newCalendar("demo 1", "somwhere");
 
 			Console.Read();
