@@ -11,6 +11,12 @@ namespace CalendarQuickstart.Logic.Tests
 	[TestClass()]
 	public class CalendarssTests
 	{
+		[TestInitialize]
+		public void setUp()
+		{
+
+
+		}
 		[TestMethod()]
 		public void CalendarssTest()
 		{
@@ -87,6 +93,11 @@ namespace CalendarQuickstart.Logic.Tests
 		public void deleteCalendarByNameTest()
 		{
 			Assert.Fail();
+		}
+		[TestCleanup]
+		public void cleanUp()
+		{
+
 		}
 	}
 }

@@ -11,6 +11,11 @@ namespace CalendarQuickstart.Logic.Tests
 	[TestClass()]
 	public class EventssTests
 	{
+		[TestInitialize]
+		public void setUp() {
+
+
+		}
 		[TestMethod()]
 		public void EventssTest()
 		{
@@ -147,6 +152,11 @@ namespace CalendarQuickstart.Logic.Tests
 		public void UnDeleteEventByIdTest()
 		{
 			Assert.Fail();
+		}
+
+		[TestCleanup]
+		public void cleanUp() {
+
 		}
 	}
 }

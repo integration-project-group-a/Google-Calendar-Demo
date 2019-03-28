@@ -11,6 +11,12 @@ namespace CalendarQuickstart.Logic.Tests
 	[TestClass()]
 	public class AttendeeTests
 	{
+		[TestInitialize]
+		public void setUp()
+		{
+
+
+		}
 		[TestMethod()]
 		public void AttendeeTest()
 		{
@@ -39,6 +45,11 @@ namespace CalendarQuickstart.Logic.Tests
 		public void getAllTest()
 		{
 			Assert.Fail();
+		}
+		[TestCleanup]
+		public void cleanUp()
+		{
+
 		}
 	}
 }
