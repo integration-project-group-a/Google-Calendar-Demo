@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace CalendarQuickstart.Logic
 {
-    class Eventss
+    public class Eventss
     {
         //don't use primary calendar in deplotment
 

@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace CalendarQuickstart.Logic
 {
-    class Calendarss
+    public class Calendarss
     {
         // can a calendar be undeleted? 
 

@@ -12,7 +12,7 @@ using Google.Apis.Services;
 namespace CalendarQuickstart.Logic
 {
 	//contacts
-	class Attendee
+	public class Attendee
 	{
 		static string ApplicationName = "Google Calendar API .NET Quickstart";
 		string[] Scopes = { PeopleService.Scope.Contacts};
