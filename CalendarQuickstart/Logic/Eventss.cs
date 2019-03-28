@@ -576,5 +576,7 @@ namespace CalendarQuickstart.Logic
 
             return service.Events.Update(eventToUpdate, calendarId, eventToUpdate.Id).Execute();
         }
+
+	
     }
 }
