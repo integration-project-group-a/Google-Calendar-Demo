@@ -27,7 +27,7 @@ namespace CalendarQuickstart
 
                     XmlDocument doc = new XmlDocument();
                     doc.LoadXml(message);
-                    XmlNodeList xmlList = doc.GetElementsByTagName("planningMessage"); //Represents an ordered collection of nodes.
+                    XmlNodeList xmlList = doc.GetElementsByTagName("Message"); //Represents an ordered collection of nodes.
                     string messageType = xmlList[0].InnerText;
 
                     switch (messageType)
