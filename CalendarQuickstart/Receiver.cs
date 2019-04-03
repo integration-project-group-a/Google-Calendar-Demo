@@ -11,7 +11,7 @@ namespace CalendarQuickstart
     {
         public static void Main(string[] args)
         {
-            var factory = new ConnectionFactory() { HostName = "localhost", UserName = "", Password = "", Port = 9001 };
+            var factory = new ConnectionFactory() { HostName = "localhost", UserName = "", Password = "", Port = 5672 };
             using (var connection = factory.CreateConnection())
             using (var channel = connection.CreateModel())
             {
@@ -76,9 +76,9 @@ namespace CalendarQuickstart
 
             // still to implement create from google cal function with these arguments
             Eventss newEvent = new Eventss();
-            //Eventss.newEvent()        
-               
-         }
+            //Eventss.newEvent()        // how do i get Event event from xml?
+
+        }
 
         public void updateEvent(XmlDocument doc)
         {
@@ -101,7 +101,7 @@ namespace CalendarQuickstart
 
             // still to implement update from google cal function with these arguments
             Eventss newEvent = new Eventss();
-            //Eventss.updateEvent();
+            //Eventss.updateEvent(); // how do i get Event event from xml?
         }
 
         public void deleteEvent(XmlDocument doc)
@@ -111,7 +111,7 @@ namespace CalendarQuickstart
 
             //still to implement delete from google cal function with these arguments
             Eventss newEvent = new Eventss();
-            //Eventss.DeleteEventByName();
+            Eventss.DeleteEventByName(titel[0].InnerText);
         }
 
     }
