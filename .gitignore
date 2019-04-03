@@ -5,3 +5,8 @@ CalendarQuickstart/obj/Debug/CalendarQuickstart.csproj.CoreCompileInputs.cache
 *.ide-shm
 *.ide
 .vs/CalendarQuickstart/v15/.suo
+*.ide-shm
+*.ide-wal
+*.cache
+*.ide-shm
+.vs/CalendarQuickstart/v15/.suo
