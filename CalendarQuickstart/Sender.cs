@@ -15,9 +15,11 @@ namespace CalendarQuickstart
             using (var connection = factory.CreateConnection())
             using (var channel = connection.CreateModel())
             {
+                channel.ExchangeDeclare(exchange: "logs", type: "fanout");
+
                 var body = Encoding.UTF8.GetBytes(doc);
                 Console.WriteLine(body);
-                channel.BasicPublish(exchange: "RabbitMQ",
+                channel.BasicPublish(exchange: "logs",
                     routingKey: "",
                     basicProperties: null,
                     body: body);

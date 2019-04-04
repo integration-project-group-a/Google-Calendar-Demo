@@ -15,7 +15,9 @@ namespace CalendarQuickstart
             using (var connection = factory.CreateConnection())
             using (var channel = connection.CreateModel())
             {
-                channel.QueueBind(queue: "Planning", exchange: "RabbitMQ", routingKey: "");
+                channel.ExchangeDeclare(exchange: "logs", type: "fanout");
+
+                channel.QueueBind(queue: "Planning", exchange: "logs", routingKey: "");
                 Console.WriteLine("[*] Waiting for logs.");
 
                 var consumer = new EventingBasicConsumer(channel);
@@ -61,11 +63,13 @@ namespace CalendarQuickstart
         {
             XmlNodeList titel = doc.GetElementsByTagName("titel");
             XmlNodeList local = doc.GetElementsByTagName("local");
+            XmlNodeList desc = doc.GetElementsByTagName("desc");
             XmlNodeList start = doc.GetElementsByTagName("start");
             XmlNodeList end = doc.GetElementsByTagName("end");
 
             Console.WriteLine(titel[0].InnerText);
             Console.WriteLine(local[0].InnerText);
+            Console.WriteLine(desc[0].InnerText);
             Console.WriteLine(start[0].InnerText);
             Console.WriteLine(end[0].InnerText);
 
@@ -76,7 +80,7 @@ namespace CalendarQuickstart
 
             // still to implement create from google cal function with these arguments
             Eventss newEvent = new Eventss();
-            Eventss.newEvent();
+            //Eventss.newEvent(titel[0].InnerText, local[0].InnerText, desc[0].InnerText, event_begin, event_end, ); //attendee list get all als parameter
 
         }
 
