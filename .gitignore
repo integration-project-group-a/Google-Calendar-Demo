@@ -10,3 +10,5 @@ CalendarQuickstart/obj/Debug/CalendarQuickstart.csproj.CoreCompileInputs.cache
 *.cache
 *.ide-shm
 .vs/CalendarQuickstart/v15/.suo
+.vs/*
+packages/*
