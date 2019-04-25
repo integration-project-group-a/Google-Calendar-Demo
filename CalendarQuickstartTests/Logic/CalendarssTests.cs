@@ -14,7 +14,7 @@ namespace CalendarQuickstart.Logic.Tests
 		[TestInitialize]
 		public void setUp()
 		{
-
+			
 
 		}
 		[TestMethod()]
@@ -27,6 +27,7 @@ namespace CalendarQuickstart.Logic.Tests
 		public void getCalendersTest()
 		{
 			Assert.Fail();
+
 		}
 
 		[TestMethod()]
