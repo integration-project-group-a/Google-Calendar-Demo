@@ -57,3 +57,4 @@ C:\Users\iggy\Documents\gitClones\Google-Calendar-Demo\CalendarQuickstart\obj\De
 C:\Users\iggy\Documents\gitClones\Google-Calendar-Demo\CalendarQuickstart\obj\Debug\CalendarQuickstart.csproj.CopyComplete
 C:\Users\iggy\Documents\gitClones\Google-Calendar-Demo\CalendarQuickstart\obj\Debug\CalendarQuickstart.exe
 C:\Users\iggy\Documents\gitClones\Google-Calendar-Demo\CalendarQuickstart\obj\Debug\CalendarQuickstart.pdb
+C:\Users\iggy\Documents\gitClones\Google-Calendar-Demo\CalendarQuickstart\obj\Debug\CalendarQuickstart.csprojAssemblyReference.cache

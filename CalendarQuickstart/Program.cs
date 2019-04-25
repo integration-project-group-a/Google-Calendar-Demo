@@ -2,6 +2,7 @@ using CalendarQuickstart.Logic;
 using Google.Apis.Auth.OAuth2;
 using Google.Apis.Calendar.v3;
 using Google.Apis.Calendar.v3.Data;
+using Google.Apis.PeopleService.v1.Data;
 using Google.Apis.Services;
 using Google.Apis.Util.Store;
 using System;
@@ -22,7 +23,12 @@ namespace CalendarQuickstart
 
 			Attendee tes = new Attendee();
 
-			tes.getPerson();
+			Person t = tes.getPerson("UUID2");
+			foreach (var g in t.Names) {
+				Console.WriteLine(g.GivenName);
+
+			}
+			Console.Read();
 
 
 		}

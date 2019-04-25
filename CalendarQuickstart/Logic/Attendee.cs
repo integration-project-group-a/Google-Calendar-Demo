@@ -1,6 +1,6 @@
 ﻿using Google.Apis.Auth.OAuth2;
-using Google.Apis.People.v1;
-using Google.Apis.People.v1.Data;
+using Google.Apis.PeopleService.v1;
+using Google.Apis.PeopleService.v1.Data;
 using Google.Apis.Services;
 using Google.Apis.Util.Store;
 using System;
@@ -18,7 +18,7 @@ namespace CalendarQuickstart.Logic
 	{
 		static string ApplicationName = "Google Calendar API .NET Quickstart";
 		string[] Scopes = { Google.Apis.People.v1.PeopleService.Scope.Contacts, Google.Apis.People.v1.PeopleService.Scope.ContactsReadonly, Google.Apis.People.v1.PeopleService.Scope.PlusLogin, Google.Apis.People.v1.PeopleService.Scope.UserinfoProfile};
-		public static Google.Apis.People.v1.PeopleService peopleService;
+		public static PeopleServiceService peopleService;
 		//PeopleService Service;
 
 
@@ -43,7 +43,7 @@ namespace CalendarQuickstart.Logic
 			}
 
 			// Create the service.
-			peopleService = new Google.Apis.People.v1.PeopleService(new BaseClientService.Initializer()
+			peopleService = new PeopleServiceService(new BaseClientService.Initializer()
 			{
 				HttpClientInitializer = credential,
 				ApplicationName = ApplicationName,
@@ -64,7 +64,7 @@ namespace CalendarQuickstart.Logic
 				CancellationToken.None).Result;
 
 			// Create the service.
-			peopleService = new PeopleService(new BaseClientService.Initializer()
+			peopleService = new PeopleServiceService(new BaseClientService.Initializer()
 			{
 				HttpClientInitializer = credential,
 				ApplicationName = "APP_NAME",
@@ -119,28 +119,44 @@ namespace CalendarQuickstart.Logic
 
 		}
 
-		public void getPerson()
+		public void deletePerson(string uuid) {
+			Person per = getPerson(uuid);
+			peopleService.People.DeleteContact(per.ResourceName).Execute();
+		}
+		public Person getPerson(string uuid)
 		{
-
-			PeopleResource.ConnectionsResource.ListRequest peopleRequest =
-			peopleService.People.Connections.List("people/me");
-			peopleRequest.RequestMaskIncludeField = "person.names";
-			ListConnectionsResponse connectionsResponse = peopleRequest.Execute();
-			IList<Person> connections = connectionsResponse.Connections;
-
-			foreach (var test in connections) {
-
-				Console.Write(test.Names.First().DisplayName);
-				Console.Read();
-
+			IList<Person> test = getAll();
+			foreach (var t in test)
+			{
+				foreach (var g in t.UserDefined)
+				{
+					if (g.Key == uuid) {
+						return t;
 					}
+					
+				
+				}
+			}
+			return null;
+			}
+		//not ready
+		public void updatePerson(string uuid) {
+			Person per = getPerson(uuid);
+
+			Person updated = peopleService.People.UpdateContact(per, per.ResourceName)
+				.Execute();
 		}
 
 		//with uuid
 	//	public bool updateAttendees(string uuid)
-		public void getAll() {
-
-			
+		public IList<Person> getAll() {
+			PeopleResource.ConnectionsResource.ListRequest peopleRequest =
+			peopleService.People.Connections.List("people/me");
+			peopleRequest.PersonFields = "names,emailAddresses,userDefined";
+			ListConnectionsResponse connectionsResponse = peopleRequest.Execute();
+			IList<Person> connections = connectionsResponse.Connections;
+		
+			return connections;
 		}
 	
 
