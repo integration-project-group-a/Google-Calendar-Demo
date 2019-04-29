@@ -50,27 +50,6 @@ namespace CalendarQuickstart.Logic
 			});
 
 		}
-		public Attendee(string test) {
-			// Create OAuth credential.
-			UserCredential credential = GoogleWebAuthorizationBroker.AuthorizeAsync(
-				
-				new ClientSecrets
-				{
-					ClientId = "796797994752-otivl19j162n9mhgvd56pahdg77cli54.apps.googleusercontent.com",
-					ClientSecret = "uVb1zDwcFc7vY29TtVQG_VnS"
-				},
-				new[] { "profile", "https://www.googleapis.com/auth/contacts.readonly" },
-				"me",
-				CancellationToken.None).Result;
-
-			// Create the service.
-			peopleService = new PeopleServiceService(new BaseClientService.Initializer()
-			{
-				HttpClientInitializer = credential,
-				ApplicationName = "APP_NAME",
-			});
-
-		}
 
 		/**
 		public Attendee(string test)
@@ -140,9 +119,13 @@ namespace CalendarQuickstart.Logic
 			return null;
 			}
 		//not ready
-		public void updatePerson(string uuid) {
+		public void updatePerson(string uuid, string givenName, string middleName, string familyname) {
 			Person per = getPerson(uuid);
-
+			foreach (var t in per.Names) {
+				if (givenName != null) { t.GivenName = givenName; }
+				if (familyname != null) { t.FamilyName = familyname; }
+				if (middleName != null) { t.MiddleName = middleName; }						
+			}
 			Person updated = peopleService.People.UpdateContact(per, per.ResourceName)
 				.Execute();
 		}
