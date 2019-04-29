@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 
 namespace CalendarQuickstart.Logic
 {
+	//test
 	//contacts
 	public class Attendee
 	{
